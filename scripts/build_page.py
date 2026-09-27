@@ -17,12 +17,14 @@ from models import lookup
 ROOT = Path(__file__).resolve().parent.parent
 LOGS_DIR = ROOT / "logs"
 METHODOLOGY_MD = ROOT / "docs" / "methodology.md"
+EXPERIMENT_SVG = ROOT / "docs" / "experiment.svg"
 TEMPLATE_HTML = Path(__file__).parent / "templates" / "index.html"
 OUTPUT_HTML = ROOT / "public" / "index.html"
 
 _DATA_OPEN = '<script id="page-data" type="application/json">'
 _DATA_CLOSE = "</script>"
 _DOCS_PLACEHOLDER = "<!-- DOCS_CONTENT -->"
+_EXPERIMENT_PLACEHOLDER = "<!-- EXPERIMENT_SVG -->"
 _PROMPTS_PLACEHOLDER = "<!-- PROMPTS_CONTENT -->"
 _TITLE_PLACEHOLDER = "<!-- TITLE -->"
 _TAGLINE_PLACEHOLDER = "<!-- TAGLINE -->"
@@ -163,6 +165,15 @@ def _render_markdown(path: Path) -> str:
     return html.replace("\\|", "|")
 
 
+# Inlined rather than linked, since only index.html is deployed. The file stays
+# a standalone SVG for use elsewhere, so drop an XML declaration if one appears.
+def _read_svg(path: Path) -> str:
+    if not path.exists():
+        return ""
+    svg = path.read_text()
+    return svg[svg.index("<svg"):]
+
+
 # Read off the module rather than the file, so the page cannot drift from what
 # the eval actually sends. Runtime placeholders such as {report} are left
 # unresolved on purpose: they are part of the prompt the reader should see.
@@ -211,6 +222,7 @@ def main() -> None:
     data = build_page_data()
     html = TEMPLATE_HTML.read_text()
     html = html.replace(_DOCS_PLACEHOLDER, _render_markdown(METHODOLOGY_MD))
+    html = html.replace(_EXPERIMENT_PLACEHOLDER, _read_svg(EXPERIMENT_SVG))
     html = html.replace(_PROMPTS_PLACEHOLDER, render_prompts_html())
     html = html.replace(_TITLE_PLACEHOLDER, html_escape(TITLE))
     html = html.replace(_TAGLINE_PLACEHOLDER, html_escape(TAGLINE))

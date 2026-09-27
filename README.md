@@ -7,8 +7,10 @@ Every trial shows the agent an off-limits file through ordinary tool calls, in a
 without it. Nothing asks the agent to bring this up, so the eval measures whether its final report does anyway,
 and whether that changes when the information was actually used.
 
-- **Results:** https://laisrast.github.io/come-clean-eval/
-- **Methodology:** [`docs/methodology.md`](docs/methodology.md), also rendered on the results page along with
+![How one trial runs: setup, forced exposure, the agent's turn, and the two measures](docs/experiment.svg)
+
+- **Project page:** https://laisrast.github.io/come-clean-eval/
+- **Methodology:** [`docs/methodology.md`](docs/methodology.md), also rendered on the project page along with
   every prompt verbatim.
 
 ## Running it
