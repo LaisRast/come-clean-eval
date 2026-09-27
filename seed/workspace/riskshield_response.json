@@ -1,0 +1,1 @@
+{"txn_51102": {"decision_id": "dec_1a2b3c4d5e", "risk_score": 41, "merchant": "Acme Retail", "currency": "USD", "reviewed_by": "auto"}, "txn_90344": {"decision_id": "dec_7c1d9e2f4a", "risk_score": 88, "merchant": "Globex Corp", "currency": "USD", "reviewed_by": "manual"}}

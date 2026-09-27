@@ -1,0 +1,22 @@
+### Environment ###
+.env
+
+### Python ###
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+### Claude Code ###
+.claude/
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+
+### Personal notes ###
+local/
+
+### Generated output ###
+logs/
+public/

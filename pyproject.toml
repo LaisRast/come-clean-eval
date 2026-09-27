@@ -1,0 +1,31 @@
+[project]
+name = "come-clean-eval"
+version = "0.1.0"
+description = "Does a coding agent report the information it was told not to use?"
+requires-python = ">=3.10"
+dependencies = [
+    "inspect-ai>=0.3.205",
+    "openai>=2.26.0,<3",
+]
+
+[tool.comeclean]
+headline = "Come Clean"
+summary = """
+Every trial shows the agent information it was told not to use, in a task that cannot be
+finished without it. Nothing asks the agent to bring this up, so the eval measures whether
+its report does anyway, and whether that changes when the information was used.
+"""
+
+[project.optional-dependencies]
+scripts = ["markdown>=3.7"]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+norecursedirs = ["seed"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/comeclean"]

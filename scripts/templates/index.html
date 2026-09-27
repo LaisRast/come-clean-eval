@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><!-- TITLE --></title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #fff;
+      color: #111827;
+      line-height: 1.6;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ---- hero ---- */
+    .hero {
+      padding: 40px 0 28px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+    }
+
+    .hero .tagline {
+      font-size: 17px;
+      color: #4b5563;
+      max-width: 560px;
+      margin: 0 auto 28px;
+    }
+
+    .hero .desc {
+      font-size: 14px;
+      color: #6b7280;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ---- page nav ---- */
+    .page-nav {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .page-nav a { color: #6b7280; text-decoration: none; }
+    .page-nav a:hover { color: #111827; }
+
+    /* ---- section header ---- */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 32px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .section-title { font-size: 20px; font-weight: 700; margin: 0; }
+
+    section { margin-bottom: 64px; }
+
+    /* ---- viz tokens (see dataviz skill: references/palette.md) ---- */
+    .viz-root {
+      --status-good: #0ca30c;
+      --status-warning: #fab219;
+      --status-serious: #ec835a;
+      --status-critical: #d03b3b;
+      /* Report states are categories, not severities, so they do not reuse the
+         status palette. Chosen for lightness separation as well as hue; not
+         run through a CVD validator, so every cell also carries a tooltip and
+         the legend is directly labelled. */
+      --state-used: #1d4ed8;
+      --state-neither: #0d9488;
+      --state-not-used: #ea580c;
+      --state-none: #94a3b8;
+    }
+
+    /* ---- prompts ---- */
+    .prompt-block { margin-bottom: 24px; }
+    .prompt-title { font-size: 13px; font-weight: 700; color: #374151; }
+    .prompt-note { font-size: 12px; color: #6b7280; margin: 4px 0 8px; }
+    .prompt-sublabel {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 10px 0 4px;
+    }
+    .prompt-text {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      margin: 0;
+    }
+
+    /* ---- results subsections ---- */
+    .subsection { margin-bottom: 44px; }
+    .subsection-title { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+    .subsection-note { font-size: 13px; color: #6b7280; margin-bottom: 18px; }
+    /* ---- figures ---- */
+    .figure { margin-bottom: 36px; }
+    .fig-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .fig-label { flex: 0 0 140px; font-size: 12px; color: #374151; text-align: right; }
+    .fig-panel { flex: 1 1 0; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .fig-track { flex: 1 1 auto; height: 18px; background: #f1f5f9; border-radius: 3px;
+      overflow: hidden; display: flex; }
+    .fig-fill { height: 100%; }
+    .fig-value { flex: 0 0 46px; font-size: 11px; color: #4b5563; font-variant-numeric: tabular-nums; }
+    .fig-gap { flex: 0 0 62px; font-size: 11px; font-weight: 600; color: #374151;
+      font-variant-numeric: tabular-nums; }
+    .fig-na { flex: 1 1 auto; font-size: 11px; color: #9ca3af; font-style: italic; }
+    .fig-gap-na { color: #9ca3af; font-weight: 400; }
+    .fig-heads span.fig-gap-head { flex: 0 0 62px; text-align: right; }
+    .fig-heads { display: flex; gap: 10px; margin-bottom: 8px; }
+    .fig-heads .fig-label { visibility: hidden; }
+    .fig-heads span { flex: 1 1 0; font-size: 11px; font-weight: 600; color: #6b7280; }
+    /* The denominator, so a conditional column cannot be read as if it were
+       over every trial. */
+    .fig-heads small { display: block; font-weight: 400; color: #9ca3af; }
+    .figure-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #374151;
+      margin-top: 12px; margin-left: 150px; }
+    .figure-legend .state-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+      margin-right: 6px; }
+
+    /* ---- table ---- */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    thead th {
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    thead th.col-model { text-align: left; color: #6b7280; }
+    thead th.col-num { text-align: right; }
+
+    tbody td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .model-name { font-weight: 600; font-size: 14px; white-space: nowrap; }
+
+    .model-sub {
+      font-size: 11px;
+      color: #9ca3af;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 1px solid #d1d5db;
+      font-size: 9px;
+      font-style: italic;
+      font-weight: 700;
+      font-family: Georgia, serif;
+      color: #9ca3af;
+      cursor: default;
+      vertical-align: middle;
+      margin-left: 4px;
+      line-height: 1;
+    }
+
+    .info-icon:hover { border-color: #6b7280; color: #6b7280; }
+
+    td.col-num { text-align: right; white-space: nowrap; }
+
+    .metric-value { font-variant-numeric: tabular-nums; }
+    .cell-sub {
+      display: block;
+      margin-top: 2px;
+      font-size: 10px;
+      color: #9ca3af;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    /* ---- per-row report detail ---- */
+    .row-model { cursor: pointer; }
+
+    .expand-toggle {
+      display: inline-block;
+      width: 8px;
+      margin-right: 6px;
+      color: #9ca3af;
+      transition: transform 0.15s ease;
+      font-size: 10px;
+    }
+
+    .expand-toggle.open { transform: rotate(90deg); }
+
+    .detail-row td { padding: 0; border-bottom: 1px solid #f3f4f6; }
+
+    .detail-wrap {
+      display: none;
+      padding: 14px 10px 18px;
+      background: #fafafa;
+    }
+
+    .detail-wrap.open { display: block; }
+
+    .trial-block { margin-bottom: 16px; }
+    .trial-block:last-child { margin-bottom: 0; }
+
+    .trial-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2px 4px;
+    }
+
+    .trial-header .status-dot { margin-right: 3px; }
+    .trial-header span.flag { margin-right: 10px; color: #6b7280; font-weight: 500; }
+
+    .report-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #374151;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+
+    .block-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #9ca3af;
+      margin: 10px 0 4px;
+    }
+
+    .trial-header + .block-label { margin-top: 0; }
+
+    .judge-text { background: #f9fafb; max-height: 220px; }
+
+    /* ---- docs section ---- */
+    .docs-body { font-size: 14px; line-height: 1.75; color: #374151; }
+
+    .docs-body h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      margin: 32px 0 10px;
+    }
+
+    .docs-body h3:first-child { margin-top: 0; }
+
+    .docs-body p { margin-bottom: 12px; }
+    .docs-body ul { margin: 6px 0 12px 20px; }
+    .docs-body li { margin-bottom: 6px; }
+    .docs-body strong { font-weight: 600; color: #111827; }
+
+    .docs-body table {
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+      width: 100%;
+    }
+
+    .docs-body th {
+      text-align: left;
+      padding: 6px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+    }
+
+    .docs-body td { padding: 6px 10px; border-bottom: 1px solid #f3f4f6; }
+
+    .results-intro {
+      font-size: 14px;
+      color: #4b5563;
+      margin-bottom: 28px;
+    }
+
+    .results-group { margin-bottom: 48px; }
+    .results-group:last-child { margin-bottom: 0; }
+
+
+
+    .results-group-empty {
+      font-size: 13px;
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+
+
+    /* ---- footer ---- */
+    footer {
+      border-top: 1px solid #f3f4f6;
+      padding: 28px 0;
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    footer a { color: #6b7280; text-decoration: none; }
+    footer a:hover { color: #111827; }
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1><!-- TITLE --></h1>
+    <p class="tagline"><!-- TAGLINE --></p>
+    <p class="desc"><!-- DESCRIPTION --></p>
+  </section>
+
+  <nav class="page-nav">
+    <a href="#methodology">Methodology</a>
+    <a href="#prompts">Prompts</a>
+    <a href="#results">Results</a>
+    <a href="https://github.com/laisrast/come-clean-eval" target="_blank">GitHub</a>
+  </nav>
+
+  <section id="methodology" style="scroll-margin-top:24px">
+    <header class="section-header">
+      <h2 class="section-title">Methodology</h2>
+    </header>
+    <div class="docs-body"><!-- DOCS_CONTENT --></div>
+  </section>
+
+  <section id="prompts" style="scroll-margin-top:24px">
+    <header class="section-header">
+      <h2 class="section-title">Prompts</h2>
+    </header>
+    <p class="results-intro">
+      Verbatim, read from the code at build time. Any remaining braces are placeholders, noted below where they
+      appear.
+    </p>
+    <!-- PROMPTS_CONTENT -->
+  </section>
+
+  <section id="results" class="viz-root" style="scroll-margin-top:24px">
+    <header class="section-header">
+      <h2 class="section-title">Results</h2>
+    </header>
+    <p class="results-intro">
+      Everything below is computed from the trial logs. Each trial contributes two things: whether the agent used
+      the off-limits value, and how the judge classified its report. A trial counts only if it filed a report, so
+      one that hit the message cap without filing is left out entirely, since nothing ran to establish what it did.
+    </p>
+    <div id="results-groups"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="https://github.com/laisrast/come-clean-eval" target="_blank">GitHub</a>
+    <span id="footer-updated"></span>
+  </div>
+</footer>
+
+<script id="page-data" type="application/json">{}</script>
+
+<script>
+(function () {
+  const dataRaw = document.getElementById('page-data').textContent.trim();
+  if (!dataRaw || dataRaw === '{}') return;
+  const pageData = JSON.parse(dataRaw);
+  if (!pageData.runs || !pageData.runs.length) return;
+
+  // Status thresholds: good -> warning -> serious -> critical, from the
+  // dataviz skill's fixed status palette (never the categorical series hues).
+  function statusLevel(v, higherIsBetter) {
+    const x = higherIsBetter ? v : 1 - v;
+    if (x >= 1) return 'good';
+    if (x >= 0.8) return 'warning';
+    if (x >= 0.6) return 'serious';
+    return 'critical';
+  }
+
+  function statusColor(level) {
+    return {
+      good: 'var(--status-good)',
+      warning: 'var(--status-warning)',
+      serious: 'var(--status-serious)',
+      critical: 'var(--status-critical)',
+    }[level];
+  }
+
+  // A colored dot beside the value, never the value text itself: status hues
+  // sit below 3:1 contrast for some steps, so the dot is a supplementary
+  // cue (title carries the label), and the number stays legible in ink.
+  function statusDot(v, higherIsBetter) {
+    const level = statusLevel(v, higherIsBetter);
+    return '<span class="status-dot" style="background:' + statusColor(level) + '" title="' + level + '"></span>';
+  }
+
+  function headerCell(className, label, tooltip) {
+    return '<th class="' + className + '">' + label +
+      ' <span class="info-icon" title="' + tooltip + '">i</span></th>';
+  }
+
+  function escapeHtml(str) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(str).replace(/[&<>"']/g, function (c) { return map[c]; });
+  }
+
+  // A trial's report is free text from the model under test, not trusted
+  // markup: always escaped, rendered as plain pre-wrapped text rather than
+  // interpreted as HTML or markdown.
+  function trialBlock(r, idx) {
+    // The report dot reads the category as disclosure, D = not undisclosed, so a
+    // concealing trial is visible at a glance. It deliberately does not use the
+    // figure legend's hues: those are nominal and would not show that.
+    const flagsHtml =
+      statusDot(r.exploited, false) +
+      '<span class="flag">exploited: ' + (r.exploited ? 'yes' : 'no') + '</span>&nbsp;&nbsp;' +
+      statusDot(r.category === 'undisclosed' ? 0 : 1, true) +
+      '<span class="flag">report: ' + escapeHtml(r.category) + '</span>';
+    const reportText = r.report ? escapeHtml(r.report) : '(no report submitted)';
+    const judgeText = r.judge_explanation ? escapeHtml(r.judge_explanation) : '(no judge verdict)';
+    return '<div class="trial-block">' +
+      '<div class="trial-header">Trial ' + (idx + 1) + '&nbsp;&nbsp;' + flagsHtml + '</div>' +
+      '<div class="block-label">Model report</div>' +
+      '<div class="report-text">' + reportText + '</div>' +
+      '<div class="block-label">Judge response</div>' +
+      '<div class="report-text judge-text">' + judgeText + '</div>' +
+      '</div>';
+  }
+
+  function toggleRun(el) {
+    const row = el.closest('tr');
+    const wrap = row.nextElementSibling.querySelector('.detail-wrap');
+    const arrow = el.querySelector('.expand-toggle');
+    const open = wrap.classList.toggle('open');
+    if (arrow) arrow.classList.toggle('open', open);
+  }
+  window.toggleRun = toggleRun;
+
+  // The fraction goes under the percentage rather than in a tooltip: at these
+  // trial counts the denominator is most of what a reader needs.
+  function cellSub(text) {
+    return '<span class="cell-sub">' + text + '</span>';
+  }
+
+  function rateCell(rate, count, total) {
+    if (rate === null || rate === undefined) {
+      return '<td class="col-num"><span class="metric-value">-</span></td>';
+    }
+    return '<td class="col-num"><span class="metric-value">' + Math.round(rate * 100) + '%</span>' +
+      cellSub(count + '/' + total) + '</td>';
+  }
+
+  // Signed and in points rather than a share, so it does not get a percent sign.
+  function gapCell(run) {
+    const v = run.disclosure_gap;
+    if (v === null || v === undefined) {
+      return '<td class="col-num"><span class="metric-value">-</span></td>';
+    }
+    const pts = Math.round(v * 100);
+    return '<td class="col-num"><span class="metric-value">' + (pts > 0 ? '+' : '') + pts + ' pts</span>' +
+      cellSub(run.disclosed_exploited_count + '/' + run.exploited_samples + ' vs ' +
+              run.disclosed_refused_count + '/' + run.refused_samples) + '</td>';
+  }
+
+  function renderSummaryTable(runs) {
+    const rows = runs.map(function (run) {
+      return '<tr>' +
+        '<td class="row-model"><div class="model-name">' + escapeHtml(name(run)) +
+          ' <span class="info-icon" title="' + runTooltip(run) + '">i</span></div></td>' +
+        rateCell(run.exploitation_rate, run.exploitation_count, run.completed_samples) +
+        rateCell(run.disclosure_rate, run.disclosed_count, run.completed_samples) +
+        rateCell(run.disclosure_rate_exploited, run.disclosed_exploited_count, run.exploited_samples) +
+        rateCell(run.disclosure_rate_refused, run.disclosed_refused_count, run.refused_samples) +
+        gapCell(run) +
+        '</tr>';
+    }).join('');
+    return '<div class="table-wrap"><table>' +
+      '<thead><tr>' +
+        headerCell('col-model', 'Model', 'Hover the icon for trial counts') +
+        headerCell('col-num', 'Exploitation', 'P(E). Did the agent use the off-limits value?') +
+        headerCell('col-num', 'Disclosure', 'P(D). Did the report mention the restricted access, over every ' +
+          'scored trial?') +
+        headerCell('col-num', 'Disclosure | E', 'P(D | E). Having used the value, did the report mention the ' +
+          'access?') +
+        headerCell('col-num', 'Disclosure | not E', 'P(D | not E). Without using it, did the report mention ' +
+          'the access?') +
+        headerCell('col-num', 'Gap', 'P(D | E) - P(D | not E), in points. Is disclosure associated with use? ' +
+          'Needs a model whose exploitation varied, so a dash here means it always or never exploited') +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // A log of what the scorer recorded, one row per run: each score field as a
+  // share of every scored trial, with the counts on hover. Nothing conditional,
+  // nothing derived.
+  function shareCell(count, total) {
+    if (!total) return '<td class="col-num"><span class="metric-value">-</span></td>';
+    return '<td class="col-num"><span class="metric-value">' + Math.round((count / total) * 100) + '%</span>' +
+      cellSub(count + '/' + total) + '</td>';
+  }
+
+  function renderTable(runs) {
+    const rows = runs.map(function (run) {
+      const detail = (run.reports || []).map(function (r, idx) { return trialBlock(r, idx); }).join('');
+      return '<tr>' +
+        '<td class="row-model" onclick="toggleRun(this)">' +
+          '<div class="model-name"><span class="expand-toggle">&#9656;</span>' + escapeHtml(name(run)) +
+            ' <span class="info-icon" title="' + runTooltip(run) + '">i</span>' +
+          '</div>' +
+          '<div class="model-sub">' + run.model_id.replace('openrouter/', '') + '</div>' +
+        '</td>' +
+        shareCell(run.exploitation_count, run.completed_samples) +
+        REPORTS.map(function (rep) {
+          return shareCell(run.given_all_counts[rep.key] || 0, run.completed_samples);
+        }).join('') +
+        '</tr>' +
+        '<tr class="detail-row"><td colspan="6"><div class="detail-wrap">' + detail + '</div></td></tr>';
+    }).join('');
+
+    return '<div class="table-wrap"><table>' +
+      '<thead><tr>' +
+        headerCell('col-model', 'Model', 'Click a row to read every trial: its exploitation outcome, the ' +
+          'report, and the judge\'s response') +
+        headerCell('col-num', 'exploited', 'Trials where the tests passed, so the off-limits value was used') +
+        headerCell('col-num', 'admitted_use', 'Reports acknowledging the access and saying it used the ' +
+          'information') +
+        headerCell('col-num', 'denied_use', 'Reports acknowledging the access and saying it did not use the ' +
+          'information') +
+        headerCell('col-num', 'use_unstated', 'Reports acknowledging the access but saying neither') +
+        headerCell('col-num', 'undisclosed', 'Reports never mentioning the access') +
+      '</tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>';
+  }
+
+  var REPORTS = [
+    { key: 'admitted_use', label: 'admitted use', color: 'var(--state-used)' },
+    { key: 'denied_use', label: 'denied use', color: 'var(--state-not-used)' },
+    { key: 'use_unstated', label: 'use unstated', color: 'var(--state-neither)' },
+    { key: 'undisclosed', label: 'undisclosed', color: 'var(--state-none)' },
+  ];
+
+  function pct(v) { return v === null || v === undefined ? '' : Math.round(v * 100) + '%'; }
+
+  // The tip sits on the track, not the fill, so the whole bar is hoverable even
+  // where the rate is 0%.
+  function solidBar(rate, color, emptyNote, tip) {
+    if (rate === null || rate === undefined) return '<div class="fig-na">' + emptyNote + '</div>';
+    return '<div class="fig-track"' + (tip ? ' title="' + tip + '"' : '') +
+      '><div class="fig-fill" style="width:' + (rate * 100) + '%;background:' + color + '"></div></div>' +
+      '<div class="fig-value">' + pct(rate) + '</div>';
+  }
+
+  function of(count, total, noun) {
+    return count + ' of ' + total + ' ' + noun + (total === 1 ? '' : 's');
+  }
+
+  function figRow(label, panels, tooltip) {
+    const info = tooltip ? ' <span class="info-icon" title="' + tooltip + '">i</span>' : '';
+    return '<div class="fig-row"><div class="fig-label">' + escapeHtml(label) + info + '</div>' +
+      panels.map(function (p) { return '<div class="fig-panel">' + p + '</div>'; }).join('') + '</div>';
+  }
+
+  // Each head is [title, denominator]; the denominator is what keeps a
+  // conditional column from reading like an unconditional one.
+  function figHeads(heads) {
+    return '<div class="fig-heads"><div class="fig-label"></div>' +
+      heads.map(function (h) {
+        return '<span>' + h[0] + (h[1] ? '<small>' + h[1] + '</small>' : '') + '</span>';
+      }).join('') + '</div>';
+  }
+
+  function runTooltip(run) {
+    const parts = [run.model_id.replace('openrouter/', ''),
+                   'Date: ' + run.eval_created,
+                   'Scored trials: ' + run.completed_samples];
+    if (run.failed_count) parts.push('Filed no report: ' + run.failed_count);
+    return parts.join('&#10;');
+  }
+
+  function withTrials(runs) {
+    return runs.filter(function (r) { return r.completed_samples; });
+  }
+
+  function name(run) { return run.model_display_name || run.model_id; }
+
+  // Shares of `counts` across `total`, as one continuous bar.
+  function stackedBar(counts, total, emptyNote) {
+    if (!total) return '<div class="fig-na">' + emptyNote + '</div>';
+    return '<div class="fig-track">' + REPORTS.map(function (rep) {
+      const n = counts[rep.key] || 0;
+      if (!n) return '';
+      return '<div class="fig-fill" style="flex:' + n + ' 1 0;background:' + rep.color + '" title="' +
+        rep.label + ': ' + n + ' of ' + total + '"></div>';
+    }).join('') + '</div>';
+  }
+
+  function reportLegend() {
+    return '<div class="figure-legend">' + REPORTS.map(function (rep) {
+      return '<span><span class="state-key" style="background:' + rep.color + '"></span>' + rep.label + '</span>';
+    }).join('') + '</div>';
+  }
+
+  // Figure 1: both rates over every scored trial, so the two columns share a
+  // denominator and can be read across.
+  function renderExposureFigure(runs) {
+    const rows = withTrials(runs).map(function (run) {
+      return figRow(name(run), [
+        solidBar(run.exploitation_rate, 'var(--status-serious)', '',
+          'used the value: ' + of(run.exploitation_count, run.completed_samples, 'trial')),
+        solidBar(run.disclosure_rate, 'var(--status-good)', '',
+          'mentioned the access: ' + of(run.disclosed_count, run.completed_samples, 'trial')),
+      ], runTooltip(run));
+    }).join('');
+    if (!rows) return '';
+    return '<div class="figure">' +
+      figHeads([['Exploitation', ''], ['Disclosure', '']]) +
+      rows + '</div>';
+  }
+
+  // Figure 2: the same disclosure rate on two different denominators, and the
+  // difference between them. Either bar is defined on its own, but the gap needs
+  // a model that exploited on some trials and not others.
+  function gapPoints(v) {
+    if (v === null || v === undefined) return '<div class="fig-gap fig-gap-na">-</div>';
+    const pts = Math.round(v * 100);
+    return '<div class="fig-gap">' + (pts > 0 ? '+' : '') + pts + ' pts</div>';
+  }
+
+  function renderDisclosureGap(runs) {
+    const usable = withTrials(runs);
+    if (!usable.length) return '';
+    const rows = usable.map(function (run) {
+      return '<div class="fig-row"><div class="fig-label">' + escapeHtml(name(run)) +
+        ' <span class="info-icon" title="' + runTooltip(run) + '">i</span></div>' +
+        '<div class="fig-panel">' +
+          solidBar(run.disclosure_rate_exploited, 'var(--status-good)', 'never exploited',
+            'mentioned the access: ' +
+            of(run.disclosed_exploited_count, run.exploited_samples, 'exploiting trial')) + '</div>' +
+        '<div class="fig-panel">' +
+          solidBar(run.disclosure_rate_refused, 'var(--state-neither)', 'always exploited',
+            'mentioned the access: ' +
+            of(run.disclosed_refused_count, run.refused_samples, 'non-exploiting trial')) + '</div>' +
+        gapPoints(run.disclosure_gap) + '</div>';
+    }).join('');
+    return '<div class="figure">' +
+      '<div class="fig-heads"><div class="fig-label"></div>' +
+        '<span>Disclosure<small>over exploiting trials</small></span>' +
+        '<span>Disclosure<small>over non-exploiting trials</small></span>' +
+        '<span class="fig-gap-head">Gap</span>' +
+      '</div>' + rows + '</div>';
+  }
+
+  // Figure 3: the four categories as shares of every scored report, kept as a
+  // descriptive breakdown rather than a headline rate.
+  function renderReportBreakdown(runs) {
+    const rows = withTrials(runs).map(function (run) {
+      return figRow(name(run), [
+        stackedBar(run.given_all_counts, run.completed_samples, 'no scored trials'),
+      ], runTooltip(run));
+    }).join('');
+    if (!rows) return '';
+    return '<div class="figure">' + figHeads([['What the report said', '']]) +
+      rows + reportLegend() + '</div>';
+  }
+
+  function subsection(title, note, body) {
+    return '<div class="subsection"><div class="subsection-title">' + title + '</div>' +
+      '<div class="subsection-note">' + note + '</div>' + body + '</div>';
+  }
+
+  function renderResults(runs) {
+    const wrap = document.createElement('div');
+    if (!runs.length) {
+      const empty = document.createElement('div');
+      empty.className = 'results-group-empty';
+      empty.textContent = 'No trials recorded yet.';
+      wrap.appendChild(empty);
+      return wrap;
+    }
+    wrap.innerHTML =
+      subsection('Exploitation and disclosure',
+        'Did the agent use the off-limits value, and did its report mention the access? The two columns are ' +
+        'independent, so a model can sit high on one and low on the other.',
+        renderExposureFigure(runs)) +
+      subsection('Disclosure gap',
+        'Is disclosure associated with use? Negative means the access was mentioned less often after using the ' +
+        'value, zero means equally often either way, positive the reverse. A dash means the model always or ' +
+        'never exploited, so there is nothing to compare. The gap is an association, not a cause.',
+        renderDisclosureGap(runs)) +
+      subsection('Report behavior',
+        'What kind of report did agents write? Each bar splits one model\'s trials across the four judge ' +
+        'categories; hover a segment for its count.',
+        renderReportBreakdown(runs)) +
+      subsection('Summary metrics',
+        'Every measure per model in one place. A dash marks an empty denominator rather than zero: the model ' +
+        'never landed on that side of exploitation. Gap is in points, not a percentage. Hover a value for the ' +
+        'counts behind it.',
+        renderSummaryTable(runs)) +
+      subsection('Trials log',
+        'The evidence behind every figure above, as what the scorer recorded per model. Hover a value for its ' +
+        'counts, and click a row to read each trial\'s report and the judge\'s response.',
+        renderTable(runs));
+    return wrap;
+  }
+
+  document.getElementById('results-groups').appendChild(renderResults(pageData.runs));
+
+  const footerEl = document.getElementById('footer-updated');
+  if (footerEl) footerEl.innerHTML = ' &nbsp;|&nbsp; v' + pageData.version + ' &nbsp;|&nbsp; Updated ' + pageData.generated;
+}());
+</script>
+
+</body>
+</html>
