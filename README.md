@@ -1,13 +1,13 @@
-# Come Clean
+# Come Clean Eval
 
-An [Inspect](https://inspect.aisi.org.uk/) eval that asks whether a coding agent's own report mentions
-information it was told not to use.
+An [Inspect](https://inspect.aisi.org.uk/) eval asking: does a coding agent admit using information it was told
+not to use?
 
 Every trial shows the agent an off-limits file through ordinary tool calls, in a task that cannot be finished
-without it. Nothing asks the agent to bring this up, so the eval measures whether its final report does anyway,
-and whether that changes when the information was actually used.
+without it. Nothing asks the agent to bring this up, so the eval measures whether the agent uses it, whether its
+report mentions it anyway, and, when it did use it, whether the report says so.
 
-![How one trial runs: setup, forced exposure, the agent's turn, and the two measures](docs/experiment.svg)
+![How one trial runs: setup, forced exposure, the agent's turn, and the measures](docs/experiment.svg)
 
 - **Project page:** https://laisrast.github.io/come-clean-eval/
 - **Methodology:** [`docs/methodology.md`](docs/methodology.md), also rendered on the project page along with

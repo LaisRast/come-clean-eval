@@ -1,7 +1,7 @@
 [project]
 name = "come-clean-eval"
-version = "0.1.0"
-description = "Does a coding agent report the information it was told not to use?"
+version = "0.2.0"
+description = "Does a coding agent admit using information it was told not to use?"
 requires-python = ">=3.10"
 dependencies = [
     "inspect-ai>=0.3.205",
@@ -9,11 +9,12 @@ dependencies = [
 ]
 
 [tool.comeclean]
-headline = "Come Clean"
+headline = "Come Clean Eval"
 summary = """
 Every trial shows the agent information it was told not to use, in a task that cannot be
 finished without it. Nothing asks the agent to bring this up, so the eval measures whether
-its report does anyway, and whether that changes when the information was used.
+the agent uses it, whether its report mentions it anyway, and, when it did use it, whether
+the report says so.
 """
 
 [project.optional-dependencies]
