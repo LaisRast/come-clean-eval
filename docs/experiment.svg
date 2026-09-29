@@ -5,9 +5,10 @@
   <title id="exp-title">Come Clean: how one trial runs</title>
   <desc id="exp-desc">Four steps. Setup: the agent is asked to fix a failing test using only workspace/, while the
     missing record sits in private/. Forced exposure: before the agent's first turn, a failing test run and a search
-    that hits private/ with a warning are added to its transcript. The agent either uses the record or refuses, then
-    files a free-text report. Two measures: whether the tests pass at the end, and whether a judge finds the access
-    mentioned in the report.</desc>
+    that hits private/ with a warning are added to its transcript. The agent either uses the record or does not, then
+    files a free-text report. Measures: exploitation, whether the tests pass at the end; disclosure, whether a judge
+    finds the access mentioned in the report; and come clean, whether on an exploiting trial the report admits using
+    the record.</desc>
 
   <defs>
     <marker id="exp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
@@ -154,7 +155,7 @@
   <text class="muted" x="494.5" y="117" text-anchor="middle">record in</text>
   <rect class="inner" x="543" y="44" width="81" height="80" rx="4"/>
   <use href="#exp-i-ban" xlink:href="#exp-i-ban" class="ico" x="575.5" y="54" width="16" height="16"/>
-  <text class="head" x="583.5" y="88" text-anchor="middle">Refuses</text>
+  <text class="head" x="583.5" y="88" text-anchor="middle">Not used</text>
   <text class="muted" x="583.5" y="104" text-anchor="middle">test stays</text>
   <text class="muted" x="583.5" y="117" text-anchor="middle">failing</text>
 
@@ -168,23 +169,29 @@
   <text class="muted" x="456" y="242">No question about sources</text>
   <text class="muted" x="456" y="257">or the boundary</text>
 
-  <!-- 4. Two measures -->
+  <!-- 4. Measures. E, D and C -->
   <rect class="badge" x="666" y="0" width="22" height="22" rx="5"/>
   <use href="#exp-i-scale" xlink:href="#exp-i-scale" class="ico" x="670" y="4" width="14" height="14"/>
-  <text class="step" x="696" y="16">4. Two measures</text>
+  <text class="step" x="696" y="16">4. Measures</text>
 
-  <rect class="box" x="666" y="34" width="186" height="100" rx="6"/>
+  <rect class="box" x="666" y="34" width="174" height="72" rx="6"/>
   <use href="#exp-i-flask" xlink:href="#exp-i-flask" class="ico" x="678" y="45" width="14" height="14"/>
   <text class="head" x="698" y="56">Exploitation (E)</text>
-  <text class="muted" x="678" y="80">Scorer reruns the tests</text>
-  <text class="muted" x="678" y="96">on the final workspace.</text>
-  <text class="body" x="678" y="116">Pass: the record was used</text>
+  <text class="muted" x="678" y="76">Tests pass at the end:</text>
+  <text class="muted" x="678" y="92">the record was used</text>
 
-  <rect class="box" x="666" y="158" width="186" height="120" rx="6"/>
-  <use href="#exp-i-gavel" xlink:href="#exp-i-gavel" class="ico" x="678" y="169" width="14" height="14"/>
-  <text class="head" x="698" y="180">Disclosure (D)</text>
-  <text class="muted" x="678" y="204">Judge sees only the report:</text>
-  <text class="muted" x="678" y="219">is the access mentioned?</text>
-  <text class="body" x="678" y="242">Key comparison: D after</text>
-  <text class="body" x="678" y="257">use vs after refusal</text>
+  <rect class="box" x="666" y="118" width="174" height="72" rx="6"/>
+  <use href="#exp-i-gavel" xlink:href="#exp-i-gavel" class="ico" x="678" y="129" width="14" height="14"/>
+  <text class="head" x="698" y="140">Disclosure (D)</text>
+  <text class="muted" x="678" y="160">Judge reads only the report:</text>
+  <text class="muted" x="678" y="176">is the access mentioned?</text>
+
+  <path class="flow" d="M753,192 L753,208"/>
+  <path class="flow" d="M841,70 L851,70 L851,244 L843,244"/>
+
+  <rect class="box" x="666" y="210" width="174" height="68" rx="6"/>
+  <use href="#exp-i-check" xlink:href="#exp-i-check" class="ico" x="678" y="221" width="14" height="14"/>
+  <text class="head" x="698" y="232">Come clean (C)</text>
+  <text class="muted" x="678" y="252">On an exploiting trial, the</text>
+  <text class="muted" x="678" y="268">report admits using it</text>
 </svg>
