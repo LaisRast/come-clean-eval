@@ -131,9 +131,15 @@
     .fig-label { flex: 0 0 160px; font-size: 12px; color: #374151; text-align: right; }
     .fig-panel { flex: 1 1 0; display: flex; align-items: center; gap: 8px; min-width: 0; }
     .fig-track { flex: 1 1 auto; height: 18px; background: #f1f5f9; border-radius: 3px;
-      overflow: hidden; display: flex; }
+      overflow: hidden; display: flex; position: relative; }
     .fig-fill { height: 100%; }
-    .fig-value { flex: 0 0 46px; font-size: 11px; color: #4b5563; font-variant-numeric: tabular-nums; }
+    .fig-interval { position: absolute; top: 5px; height: 8px; box-sizing: border-box;
+      border-left: 2px solid #374151; border-right: 2px solid #374151; }
+    .fig-interval::before { content: ""; position: absolute; left: 0; right: 0; top: 3px; height: 2px;
+      background: #374151; }
+    .fig-value { flex: 0 0 64px; font-size: 11px; color: #4b5563; font-variant-numeric: tabular-nums;
+      line-height: 1.25; }
+    .fig-value small { display: block; font-size: 10px; color: #9ca3af; }
     .fig-na { flex: 1 1 auto; font-size: 11px; color: #9ca3af; font-style: italic; }
     .fig-excluded { font-size: 12px; color: #6b7280; margin-top: 12px; line-height: 1.6; }
     .fig-heads { display: flex; gap: 10px; margin-bottom: 8px; }
@@ -408,7 +414,8 @@
     <p class="results-intro">
       Everything below is computed from the scores recorded for each trial. A model whose run failed is not shown,
       and a trial that filed no report is left out; each model's info tooltip gives its date, scored trials, and any
-      trials without a report.
+      trials without a report. Each bar carries a 95% Wilson score interval, drawn as the line across it and given
+      as the grey range under its value.
     </p>
     <div id="results-groups"></div>
   </section>
@@ -544,11 +551,36 @@
   function pct(v) { return v === null || v === undefined ? '' : Math.round(v * 100) + '%'; }
 
   // Tooltip on the track, so a 0% bar is still hoverable.
-  function solidBar(rate, color, emptyNote, tip) {
-    if (rate === null || rate === undefined) return '<div class="fig-na">' + emptyNote + '</div>';
-    return '<div class="fig-track"' + (tip ? ' title="' + tip + '"' : '') +
-      '><div class="fig-fill" style="width:' + (rate * 100) + '%;background:' + color + '"></div></div>' +
-      '<div class="fig-value">' + pct(rate) + '</div>';
+  const Z_95 = 1.96;
+
+  // Wilson rather than rate +/- Z * SE: it stays inside [0, 1] and keeps its width at 0/n and n/n.
+  function wilsonInterval(hits, trials) {
+    const zSquared = Z_95 * Z_95;
+    const rate = hits / trials;
+    const scale = 1 + zSquared / trials;
+    const centre = (rate + zSquared / (2 * trials)) / scale;
+    const halfWidth = Z_95 * Math.sqrt(rate * (1 - rate) / trials + zSquared / (4 * trials * trials)) / scale;
+    return { low: Math.max(0, centre - halfWidth), high: Math.min(1, centre + halfWidth) };
+  }
+
+  function intervalMark(interval) {
+    return '<div class="fig-interval" style="left:' + (interval.low * 100) + '%;width:' +
+      ((interval.high - interval.low) * 100) + '%"></div>';
+  }
+
+  function intervalLabel(interval) {
+    return Math.round(interval.low * 100) + '-' + pct(interval.high);
+  }
+
+  function solidBar(hits, trials, color, emptyNote, tip) {
+    if (!trials) return '<div class="fig-na">' + emptyNote + '</div>';
+    const rate = hits / trials;
+    const interval = wilsonInterval(hits, trials);
+    const title = tip + '&#10;95% interval: ' + pct(interval.low) + ' to ' + pct(interval.high);
+    return '<div class="fig-track" title="' + title + '">' +
+      '<div class="fig-fill" style="width:' + (rate * 100) + '%;background:' + color + '"></div>' +
+      intervalMark(interval) + '</div>' +
+      '<div class="fig-value">' + pct(rate) + '<small>' + intervalLabel(interval) + '</small></div>';
   }
 
   function of(count, total, noun) {
@@ -603,9 +635,9 @@
   function renderExposureFigure(runs) {
     const rows = withTrials(runs).map(function (run) {
       return figRow(name(run), [
-        solidBar(run.exploitation_rate, 'var(--measure-exploitation)', '',
+        solidBar(run.exploitation_count, run.completed_samples, 'var(--measure-exploitation)', '',
           'used the value: ' + of(run.exploitation_count, run.completed_samples, 'trial')),
-        solidBar(run.disclosure_rate, 'var(--measure-disclosure)', '',
+        solidBar(run.disclosed_count, run.completed_samples, 'var(--measure-disclosure)', '',
           'mentioned the access: ' + of(run.disclosed_count, run.completed_samples, 'trial')),
       ], runTooltip(run));
     }).join('');
@@ -632,7 +664,7 @@
     if (!usable.length) return '<div class="fig-na">No model has enough exploiting trials yet.</div>' + excluded;
     const rows = usable.map(function (run) {
       return figRow(name(run), [
-        solidBar(run.come_clean_rate, 'var(--measure-come-clean)', '',
+        solidBar(run.come_clean_count, run.exploited_samples, 'var(--measure-come-clean)', '',
           'said it used the value: ' + of(run.come_clean_count, run.exploited_samples, 'exploiting trial')),
       ], runTooltip(run));
     }).join('');
@@ -640,20 +672,20 @@
       excluded;
   }
 
-  function sideBar(rate, count, total, color, noun) {
+  function sideBar(count, total, color, noun) {
     if (total < MIN_TRIALS) {
       const trials = total + ' ' + noun + (total === 1 ? '' : 's');
       return '<div class="fig-na">' + (total ? 'only ' + trials : 'no ' + noun + 's') + '</div>';
     }
-    return solidBar(rate, color, '', 'mentioned the access: ' + of(count, total, noun));
+    return solidBar(count, total, color, '', 'mentioned the access: ' + of(count, total, noun));
   }
 
   function renderDisclosureBreakdown(runs) {
     const rows = withTrials(runs).map(function (run) {
       return figRow(name(run), [
-        sideBar(run.disclosure_rate_exploited, run.disclosed_exploited_count, run.exploited_samples,
+        sideBar(run.disclosed_exploited_count, run.exploited_samples,
           'var(--measure-disclosure)', 'exploiting trial'),
-        sideBar(run.disclosure_rate_refused, run.disclosed_refused_count, run.refused_samples,
+        sideBar(run.disclosed_refused_count, run.refused_samples,
           'var(--measure-disclosure)', 'non-exploiting trial'),
       ], runTooltip(run));
     }).join('');

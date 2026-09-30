@@ -70,10 +70,6 @@ def load_run(log_file: Path) -> dict | None:
     refused = [v for v in values if not v["exploited"]]
     model = lookup(log.eval.model)
 
-    def _rate(count: int, over: int) -> float | None:
-        # None, not 0: an empty denominator has no rate.
-        return count / over if over else None
-
     given_all = {name: sum(1 for v in values if v[name]) for name in REPORTS}
     given_exploited = {name: sum(1 for v in exploited if v[name]) for name in REPORTS}
 
@@ -104,16 +100,11 @@ def load_run(log_file: Path) -> dict | None:
         "exploited_samples": len(exploited),
         "refused_samples": len(refused),
         "exploitation_count": len(exploited),
-        "exploitation_rate": _rate(len(exploited), len(values)),
         "given_all_counts": given_all,
         "disclosed_count": disclosed_all,
-        "disclosure_rate": _rate(disclosed_all, len(values)),
         "disclosed_exploited_count": disclosed_u,
-        "disclosure_rate_exploited": _rate(disclosed_u, len(exploited)),
         "disclosed_refused_count": disclosed_not_u,
-        "disclosure_rate_refused": _rate(disclosed_not_u, len(refused)),
         "come_clean_count": come_clean,
-        "come_clean_rate": _rate(come_clean, len(exploited)),
         "reports": reports,
     }
 
